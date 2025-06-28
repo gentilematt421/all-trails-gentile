@@ -5,9 +5,15 @@ This page contains the AllTrails hike scraper functionality.
 """
 
 import streamlit as st
-from ..scraper import AllTrailsScraper, ScrapingError
-from ..ui_components import HikeDataDisplay, InputComponents, ErrorDisplay
-from ..validators import InputValidator
+import sys
+import os
+
+# Add the parent directory to the path so we can import from app modules
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from scraper import AllTrailsScraper, ScrapingError
+from ui_components import HikeDataDisplay, InputComponents, ErrorDisplay
+from validators import InputValidator
 
 
 def render_scraper_page():

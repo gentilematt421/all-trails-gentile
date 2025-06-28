@@ -6,7 +6,7 @@ It provides an introduction and URL input that can be used across pages.
 """
 
 import streamlit as st
-from .ui_components import InputComponents
+from ui_components import InputComponents
 
 
 def configure_page():
