@@ -5,6 +5,6 @@ st.set_page_config(page_title="AllTrails Senior Product Analyst App", layout="ce
 
 # Main content
 st.title("I want to work at AllTrails! 🥾🌲")
-st.markdown("This is a personal project to showcase my data skills, product thinking, and love for the outdoors.")
+st.markdown("This is a personal project to showcase my data skills, product thinking, and desire to work at AllTrails.")
 
 
