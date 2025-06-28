@@ -1,36 +1,17 @@
 """
-Main Application Entry Point
+Hike Scraper Page
 
-This module serves as the main entry point for the AllTrails Data Project.
-It orchestrates the application flow and coordinates between different modules.
+This page contains the AllTrails hike scraper functionality.
 """
 
 import streamlit as st
-
-from app.scraper import AllTrailsScraper, ScrapingError
-from app.ui_components import HikeDataDisplay, InputComponents, ErrorDisplay
-from app.validators import InputValidator
-
-
-def configure_page():
-    """Configure Streamlit page settings."""
-    st.set_page_config(
-        page_title="AllTrails Senior Product Analyst App",
-        layout="centered"
-    )
+from ..scraper import AllTrailsScraper, ScrapingError
+from ..ui_components import HikeDataDisplay, InputComponents, ErrorDisplay
+from ..validators import InputValidator
 
 
-def render_header():
-    """Render the application header."""
-    st.title("I want to work at AllTrails! 🥾🌲")
-    st.markdown(
-        "This is a personal project to showcase my data skills, "
-        "product thinking, and love for the outdoors."
-    )
-
-
-def render_scraper_section():
-    """Render the scraper section with input and processing logic."""
+def render_scraper_page():
+    """Render the scraper page content."""
     st.header("🌲 AllTrails Hike Scraper")
     st.markdown("Enter an AllTrails hike URL to extract key information about the trail.")
     
@@ -76,14 +57,5 @@ def process_scraping_request(url: str):
             ErrorDisplay.show_scraping_error(f"Unexpected error: {str(e)}")
 
 
-def main():
-    """Main application function that orchestrates the entire flow."""
-    configure_page()
-    render_header()
-    render_scraper_section()
-
-
-if __name__ == "__main__":
-    main()
-
-
+# Main page content
+render_scraper_page() 
