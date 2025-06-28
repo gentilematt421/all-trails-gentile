@@ -1,15 +1,12 @@
 """
-Main Application Entry Point
+Main Application Entry Point - Home Page
 
-This module serves as the main entry point for the AllTrails Data Project.
-It orchestrates the application flow and coordinates between different modules.
+This module serves as the home page for the AllTrails Data Project.
+It provides an introduction and URL input that can be used across pages.
 """
 
 import streamlit as st
-
-from app.scraper import AllTrailsScraper, ScrapingError
-from app.ui_components import HikeDataDisplay, InputComponents, ErrorDisplay
-from app.validators import InputValidator
+from .ui_components import InputComponents
 
 
 def configure_page():
@@ -29,58 +26,36 @@ def render_header():
     )
 
 
-def render_scraper_section():
-    """Render the scraper section with input and processing logic."""
-    st.header("🌲 AllTrails Hike Scraper")
-    st.markdown("Enter an AllTrails hike URL to extract key information about the trail.")
+def render_home_content():
+    """Render the home page content."""
+    st.header("Welcome to Your AllTrails Adventure! 🏔️")
     
-    # Get user input
+    st.markdown("""
+    This app helps you explore and plan your hiking adventures. Use the navigation 
+    on the left to access different features:
+    
+    **🌲 Hike Scraper** - Extract detailed information from AllTrails hike pages
+    **🏔️ Build A Day Around My Hike** - Plan the perfect day around your trail
+    
+    Start by entering an AllTrails URL below to get hike information!
+    """)
+    
+    # URL input for convenience
+    st.subheader("🔗 Quick Hike URL Input")
+    st.markdown("Enter an AllTrails hike URL to get started:")
+    
     url = InputComponents.get_hike_url()
-    scrape_button = InputComponents.get_scrape_button()
     
-    if scrape_button:
-        process_scraping_request(url)
-
-
-def process_scraping_request(url: str):
-    """
-    Process the scraping request for the given URL.
-    
-    Args:
-        url: The AllTrails URL to scrape
-    """
-    # Validate input
-    is_valid, error_message = InputValidator.validate_hike_url(url)
-    
-    if not is_valid:
-        if "Please enter a URL" in error_message:
-            ErrorDisplay.show_no_url_warning()
-        else:
-            ErrorDisplay.show_invalid_url_error()
-        return
-    
-    # Perform scraping
-    with st.spinner("Scraping hike information..."):
-        try:
-            scraper = AllTrailsScraper()
-            hike_data = scraper.scrape_hike(url)
-            
-            if hike_data:
-                HikeDataDisplay.render_hike_data(hike_data)
-            else:
-                ErrorDisplay.show_scraping_failed_error()
-                
-        except ScrapingError as e:
-            ErrorDisplay.show_scraping_error(str(e))
-        except Exception as e:
-            ErrorDisplay.show_scraping_error(f"Unexpected error: {str(e)}")
+    if url:
+        st.success(f"URL entered: {url}")
+        st.info("Navigate to the '🌲 Hike Scraper' page to extract hike data!")
 
 
 def main():
-    """Main application function that orchestrates the entire flow."""
+    """Main application function that orchestrates the home page."""
     configure_page()
     render_header()
-    render_scraper_section()
+    render_home_content()
 
 
 if __name__ == "__main__":
