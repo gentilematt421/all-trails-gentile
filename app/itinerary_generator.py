@@ -66,12 +66,21 @@ class ItineraryGenerator:
             
             # Generate the prompt
             prompt = self._create_itinerary_prompt(request)
+            system_prompt = self._get_system_prompt()
+            
+            # Debug: Show the prompts being sent
+            with st.expander("🔍 Debug: View Prompts Sent to ChatGPT"):
+                st.subheader("System Prompt (AI Persona):")
+                st.code(system_prompt, language="text")
+                
+                st.subheader("User Prompt (Template with Hike Data):")
+                st.code(prompt, language="text")
             
             # Call ChatGPT
             response = self.client.chat.completions.create(
                 model="gpt-3.5-turbo",
                 messages=[
-                    {"role": "system", "content": self._get_system_prompt()},
+                    {"role": "system", "content": system_prompt},
                     {"role": "user", "content": prompt}
                 ],
                 max_tokens=1500,
@@ -128,11 +137,14 @@ Please include:
 1. **Pre-Hike Preparation** (what to bring, when to start, parking info)
 2. **Morning Activities** (breakfast, travel to trailhead, any pre-hike activities)
 3. **Hike Details** (timing, what to expect, safety considerations)
-4. **Post-Hike Activities** (lunch/dinner recommendations, relaxation, local attractions)
-5. **Evening Plans** (dinner, accommodation if needed, sunset viewing spots)
+4. **Post-Hike Activities** (lunch and dinner recommendations, relaxation, local attractions)
+5. **Evening Plans** (post dinner activities local to the area or preferences, sunset viewing spots)
 6. **Practical Tips** (weather considerations, gear recommendations, local insights)
+7. **Places Mentioned** (list all restaurants, attractions, stores, and locations mentioned in the itinerary with their addresses)
 
 Make the itinerary realistic based on the hike's difficulty and duration. Consider the location and suggest local favorites when possible. Include timing estimates for each activity.
+Please give specific locations for suggestions as in actual places instead general suggestions like "a local brewery"
+For the "Places Mentioned" section, provide a comprehensive list of all specific places you recommend (restaurants, cafes, stores, attractions, etc.) with their full addresses. If you mention a place in the itinerary, make sure to include it in this section with its address.
 """
         
         return prompt

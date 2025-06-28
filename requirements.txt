@@ -5,3 +5,7 @@ openai
 reportlab
 python-dotenv
 reportlab
+folium
+geopy
+geopy
+folium
