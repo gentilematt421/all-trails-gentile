@@ -106,37 +106,42 @@ class MapGenerator:
         places = []
         
         # Look for "Places Mentioned" section
-        places_section_match = re.search(
-            r'7\.\s*\*\*Places Mentioned\*\*.*?(?=\n\d+\.|\Z)',
-            itinerary_text,
-            re.DOTALL | re.IGNORECASE
-        )
-        
-        if places_section_match:
-            places_section = places_section_match.group(0)
-            
-            # Extract individual places with addresses
-            # Look for patterns like "Place Name - Address" or "Place Name: Address"
-            place_patterns = [
-                r'([^-\n]+?)\s*[-:]\s*([^\n]+)',  # Place - Address or Place: Address
-                r'([^,\n]+?),\s*([^,\n]+?,\s*[A-Z]{2}\s*\d{5})',  # Place, City, State ZIP
-            ]
-            
-            for pattern in place_patterns:
-                matches = re.findall(pattern, places_section, re.IGNORECASE)
-                for match in matches:
-                    if len(match) == 2:
-                        place_name = match[0].strip()
-                        address = match[1].strip()
-                        
-                        # Clean up the place name (remove bullet points, etc.)
-                        place_name = re.sub(r'^[\s•\-\*→▶▸▹▻▪▫◦‣⁃]+', '', place_name)
-                        
-                        if place_name and address:
-                            places.append({
-                                'name': place_name,
-                                'address': address
-                            })
+        if "Places Mentioned" in itinerary_text:
+            # Find the start of the Places Mentioned section
+            start_index = itinerary_text.find("Places Mentioned")
+            if start_index != -1:
+                # Get the text from "Places Mentioned" onwards
+                places_section = itinerary_text[start_index:]
+                
+                # Split into lines and look for bulleted items
+                lines = places_section.split('\n')
+                
+                for line in lines:
+                    line = line.strip()
+                    # Look for lines that start with bullet points and contain a dash
+                    if (line.startswith('•') or line.startswith('-') or line.startswith('*')) and ' - ' in line:
+                        # Split on the first " - " to separate place name from address
+                        parts = line.split(' - ', 1)
+                        if len(parts) == 2:
+                            place_name = parts[0].strip()
+                            address = parts[1].strip()
+                            
+                            # Clean up the place name (remove bullet points)
+                            place_name = re.sub(r'^[\s•\-\*→▶▸▹▻▪▫◦‣⁃]+', '', place_name)
+                            place_name = place_name.strip()
+                            
+                            # Clean up the address
+                            address = address.strip()
+                            
+                            # Validate that we have meaningful content
+                            if (place_name and address and 
+                                len(place_name) > 2 and len(address) > 10 and
+                                not place_name.lower() in ['none', 'unknown', 'n/a']):
+                                
+                                places.append({
+                                    'name': place_name,
+                                    'address': address
+                                })
         
         return places
     
@@ -149,23 +154,20 @@ class MapGenerator:
                 if location_obj:
                     coordinates = (location_obj.latitude, location_obj.longitude)
                     
-                    # Determine icon based on place type
-                    icon_type = self._get_place_icon(place['name'])
-                    
                     # Create popup content
                     popup_content = f"""
                     <div style="width: 200px;">
-                        <h5>{icon_type} {place['name']}</h5>
+                        <h5>📍 {place['name']}</h5>
                         <p><strong>Address:</strong><br>{place['address']}</p>
                     </div>
                     """
                     
-                    # Add marker
+                    # Add marker with consistent icon
                     folium.Marker(
                         coordinates,
                         popup=Popup(popup_content, max_width=250),
-                        icon=Icon(color='blue', icon=icon_type, prefix='fa'),
-                        tooltip=f"{icon_type} {place['name']}"
+                        icon=Icon(color='blue', icon='map-marker', prefix='fa'),
+                        tooltip=f"📍 {place['name']}"
                     ).add_to(map_obj)
                     
                     # Add small delay to avoid overwhelming the geocoding service
@@ -175,27 +177,6 @@ class MapGenerator:
                 st.warning(f"Could not geocode address for {place['name']}: {str(e)}")
             except Exception as e:
                 st.warning(f"Error adding marker for {place['name']}: {str(e)}")
-    
-    def _get_place_icon(self, place_name: str) -> str:
-        """Determine the appropriate icon for a place based on its name."""
-        place_lower = place_name.lower()
-        
-        if any(word in place_lower for word in ['restaurant', 'cafe', 'diner', 'grill', 'kitchen']):
-            return 'cutlery'
-        elif any(word in place_lower for word in ['brewery', 'pub', 'bar', 'tavern']):
-            return 'beer'
-        elif any(word in place_lower for word in ['hotel', 'inn', 'lodge', 'resort']):
-            return 'bed'
-        elif any(word in place_lower for word in ['store', 'shop', 'market', 'outfitter']):
-            return 'shopping-cart'
-        elif any(word in place_lower for word in ['park', 'garden', 'trail']):
-            return 'leaf'
-        elif any(word in place_lower for word in ['museum', 'gallery', 'center']):
-            return 'building'
-        elif any(word in place_lower for word in ['view', 'point', 'overlook']):
-            return 'eye'
-        else:
-            return 'map-marker'
 
 
 class MapDisplay:
@@ -233,30 +214,31 @@ class MapDisplay:
         # Show hike summary
         st.success(f"🗺️ Mapping: **{hike_data.get('name', 'Unknown Trail')}**")
         
+        # Extract places and show them
+        map_generator = MapGenerator()
+        places = map_generator._extract_places_from_itinerary(itinerary_text)
+        
+        # Display Places Mentioned section
+        if places:
+            st.subheader("📍 Places Mentioned in Your Itinerary")
+            st.markdown("These are the places we found in your itinerary that will be shown on the map:")
+            
+            for i, place in enumerate(places, 1):
+                st.markdown(f"**{i}.** **{place['name']}** - {place['address']}")
+            
+            st.markdown("---")
+        else:
+            st.warning("⚠️ No specific places with addresses were found in your itinerary.")
+            st.markdown("The map will show your hike location, but no additional places were detected.")
+            st.markdown("---")
+        
         # Create and display the map
         with st.spinner("🗺️ Generating your interactive map..."):
-            map_generator = MapGenerator()
             map_obj = map_generator.create_daily_map(hike_data, itinerary_text)
             
             if map_obj:
                 # Display the map
                 st.components.v1.html(map_obj._repr_html_(), height=600)
-                
-                # Show map legend
-                st.markdown("### 🎯 Map Legend")
-                col1, col2, col3 = st.columns(3)
-                
-                with col1:
-                    st.write("🥾 **Green Tree Icon** - Your hike trail")
-                
-                with col2:
-                    st.write("🍽️ **Blue Cutlery Icon** - Restaurants & Cafes")
-                    st.write("🍺 **Blue Beer Icon** - Breweries & Bars")
-                
-                with col3:
-                    st.write("🛏️ **Blue Bed Icon** - Hotels & Lodging")
-                    st.write("🛒 **Blue Cart Icon** - Stores & Shops")
-                    st.write("📍 **Blue Marker Icon** - Other Places")
                 
                 st.info("💡 **Tip:** Click on any marker to see details about that location!")
             else:

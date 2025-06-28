@@ -128,6 +128,7 @@ Hike Information:
         # Build the main prompt
         prompt = f"""
 Please create a comprehensive daily itinerary for a perfect day centered around this hike:
+Make sure to only give specific locations for suggestions as in actual places instead general suggestions like "a local brewery" or "a local mexican restaurant" 
 
 {hike_info}
 
@@ -142,9 +143,17 @@ Please include:
 6. **Practical Tips** (weather considerations, gear recommendations, local insights)
 7. **Places Mentioned** (list all restaurants, attractions, stores, and locations mentioned in the itinerary with their addresses)
 
-Make the itinerary realistic based on the hike's difficulty and duration. Consider the location and suggest local favorites when possible. Include timing estimates for each activity.
-Please give specific locations for suggestions as in actual places instead general suggestions like "a local brewery"
+Make the itinerary realistic based on the hike's difficulty and duration. Consider the location and suggest local favorites. Include timing estimates for each activity.
+Please give specific locations for suggestions as in actual places instead general suggestions like "a local brewery" or "a local mexican restaurant" 
+
 For the "Places Mentioned" section, provide a comprehensive list of all specific places you recommend (restaurants, cafes, stores, attractions, etc.) with their full addresses. If you mention a place in the itinerary, make sure to include it in this section with its address.
+
+IMPORTANT: Format the "Places Mentioned" section as follows:
+- Place Name - Full Address
+- Another Place - Full Address
+- Third Place - Full Address
+
+Use the exact format "Place Name - Full Address" for each location to ensure proper parsing.
 """
         
         return prompt
