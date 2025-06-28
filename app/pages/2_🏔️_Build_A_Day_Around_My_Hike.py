@@ -36,7 +36,8 @@ def render_build_day_page():
     
     # Display the hike we're planning around
     hike_data = st.session_state['hike_data']
-    st.success(f"🎯 Planning around: **{hike_data.get('name', 'Unknown Trail')}**")
+    hike_name = hike_data.get('name', 'Unknown Trail')
+    st.success(f"🎯 Planning around: **{hike_name}**")
     
     # Show hike summary
     col1, col2 = st.columns(2)
@@ -80,14 +81,14 @@ def render_build_day_page():
             if itinerary:
                 # Store the itinerary in session state
                 st.session_state['generated_itinerary'] = itinerary
-                ItineraryDisplay.render_itinerary(itinerary)
+                ItineraryDisplay.render_itinerary(itinerary, hike_name)
             else:
                 st.error("Failed to generate itinerary. Please try again.")
     
     # Display previously generated itinerary if available
     elif 'generated_itinerary' in st.session_state:
         st.markdown("### 📋 Previously Generated Itinerary")
-        ItineraryDisplay.render_itinerary(st.session_state['generated_itinerary'])
+        ItineraryDisplay.render_itinerary(st.session_state['generated_itinerary'], hike_name)
 
 
 # Main page content

@@ -2,3 +2,6 @@ streamlit
 requests
 beautifulsoup4
 openai
+reportlab
+python-dotenv
+reportlab
