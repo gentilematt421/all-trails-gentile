@@ -34,21 +34,27 @@ def render_home_content():
     This app helps you explore and plan your hiking adventures. Use the navigation 
     on the left to access different features:
     
-    **🌲 Hike Scraper** - Extract detailed information from AllTrails hike pages
-    **🏔️ Build A Day Around My Hike** - Plan the perfect day around your trail
+    **🌲 Hike Scraper** - Extract detailed information from AllTrails hike pagec<br>
+    **🏔️ Build A Day Around My Hike** - Plan the perfect day around your trail with a generated daily intinerary
     
     Start by entering an AllTrails URL below to get hike information!
     """)
     
-    # URL input for convenience
-    st.subheader("🔗 Quick Hike URL Input")
+    # URL input from user
     st.markdown("Enter an AllTrails hike URL to get started:")
     
+    # Store URL in session state for sharing across pages
     url = InputComponents.get_hike_url()
     
     if url:
+        # Store the URL in session state
+        st.session_state['hike_url'] = url
         st.success(f"URL entered: {url}")
         st.info("Navigate to the '🌲 Hike Scraper' page to extract hike data!")
+    else:
+        # Clear the URL from session state if no URL is entered
+        if 'hike_url' in st.session_state:
+            del st.session_state['hike_url']
 
 
 def main():
