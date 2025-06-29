@@ -147,27 +147,27 @@ class MapGenerator:
     
     def _add_place_markers(self, map_obj: folium.Map, places: List[Dict]):
         """Add markers for all places mentioned in the itinerary."""
-        for i, place in enumerate(places):
+        for i, place in enumerate(places, 1):
             try:
                 # Geocode the address
                 location_obj = self.geolocator.geocode(place['address'], timeout=10)
                 if location_obj:
                     coordinates = (location_obj.latitude, location_obj.longitude)
                     
-                    # Create popup content
+                    # Create popup content with number
                     popup_content = f"""
                     <div style="width: 200px;">
-                        <h5>📍 {place['name']}</h5>
+                        <h5>📍 {i}. {place['name']}</h5>
                         <p><strong>Address:</strong><br>{place['address']}</p>
                     </div>
                     """
                     
-                    # Add marker with consistent icon
+                    # Add marker with numbered tooltip
                     folium.Marker(
                         coordinates,
                         popup=Popup(popup_content, max_width=250),
                         icon=Icon(color='blue', icon='map-marker', prefix='fa'),
-                        tooltip=f"📍 {place['name']}"
+                        tooltip=f"📍 {i}. {place['name']}"
                     ).add_to(map_obj)
                     
                     # Add small delay to avoid overwhelming the geocoding service

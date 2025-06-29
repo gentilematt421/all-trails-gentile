@@ -147,6 +147,26 @@ class ErrorDisplay:
     def show_scraping_error(error_message: str) -> None:
         """Display scraping error message."""
         st.error(f"Error scraping the page: {error_message}")
+        
+        # Provide specific guidance for 403 errors
+        if "403" in error_message or "Access denied" in error_message:
+            st.warning("🚫 **AllTrails is blocking automated requests**")
+            st.markdown("""
+            **This is common and can happen for several reasons:**
+            
+            🔄 **Try these solutions:**
+            1. **Wait a few minutes** and try again
+            2. **Use a different AllTrails URL** - some pages may be less protected
+            3. **Try during off-peak hours** (early morning or late evening)
+            4. **Check if the URL is accessible** in your regular browser
+            
+            💡 **Alternative approach:**
+            - Copy the hike information manually from AllTrails
+            - Use the data to create your itinerary manually
+            
+            **Note:** AllTrails occasionally blocks automated access to protect their servers. 
+            This is normal behavior and not a problem with your app.
+            """)
     
     @staticmethod
     def show_invalid_url_error() -> None:

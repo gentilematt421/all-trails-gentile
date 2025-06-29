@@ -38,11 +38,14 @@ class AllTrailsScraper:
     """Handles scraping of AllTrails hike pages."""
     
     def __init__(self):
+        # Create a session for better connection management
+        self.session = requests.Session()
+        
         # More realistic browser headers to avoid detection
         self.headers = {
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-            'Accept-Language': 'en-US,en;q=0.5',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+            'Accept-Language': 'en-US,en;q=0.9',
             'Accept-Encoding': 'gzip, deflate, br',
             'DNT': '1',
             'Connection': 'keep-alive',
@@ -50,8 +53,15 @@ class AllTrailsScraper:
             'Sec-Fetch-Dest': 'document',
             'Sec-Fetch-Mode': 'navigate',
             'Sec-Fetch-Site': 'none',
-            'Cache-Control': 'max-age=0'
+            'Sec-Fetch-User': '?1',
+            'Cache-Control': 'max-age=0',
+            'Sec-Ch-Ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
+            'Sec-Ch-Ua-Mobile': '?0',
+            'Sec-Ch-Ua-Platform': '"macOS"'
         }
+        
+        # Apply headers to session
+        self.session.headers.update(self.headers)
     
     def scrape_hike(self, url: str) -> Optional[HikeData]:
         """
@@ -63,7 +73,7 @@ class AllTrailsScraper:
         Returns:
             HikeData object containing extracted information, or None if scraping fails
         """
-        max_retries = 3
+        max_retries = 5  # Increased retries
         for attempt in range(max_retries):
             try:
                 response = self._make_request(url)
@@ -72,16 +82,21 @@ class AllTrailsScraper:
             except requests.exceptions.HTTPError as e:
                 if e.response.status_code == 403:
                     if attempt < max_retries - 1:
-                        # Wait before retrying with different headers
-                        time.sleep(random.uniform(2, 5))
+                        # Wait longer before retrying with different headers
+                        wait_time = random.uniform(5, 15)  # Longer wait
+                        time.sleep(wait_time)
                         self._rotate_user_agent()
                         continue
                     else:
-                        raise ScrapingError("Access denied (403). AllTrails may be blocking automated requests. Try again later.")
+                        raise ScrapingError("Access denied (403). AllTrails may be blocking automated requests. Try again later or use a different URL.")
                 else:
                     raise ScrapingError(f"HTTP Error {e.response.status_code}: {str(e)}")
             except Exception as e:
-                raise ScrapingError(f"Failed to scrape hike data: {str(e)}")
+                if attempt < max_retries - 1:
+                    time.sleep(random.uniform(2, 5))
+                    continue
+                else:
+                    raise ScrapingError(f"Failed to scrape hike data: {str(e)}")
     
     def _rotate_user_agent(self):
         """Rotate to a different user agent to avoid detection."""
@@ -89,15 +104,21 @@ class AllTrailsScraper:
             'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
             'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
             'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Safari/605.1.15',
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
+            'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0'
         ]
-        self.headers['User-Agent'] = random.choice(user_agents)
+        new_agent = random.choice(user_agents)
+        self.session.headers.update({'User-Agent': new_agent})
     
     def _make_request(self, url: str) -> requests.Response:
         """Make HTTP request to the given URL."""
-        # Add a small delay to be more human-like
-        time.sleep(random.uniform(1, 3))
-        response = requests.get(url, headers=self.headers, timeout=30)
+        # Add a longer delay to be more human-like
+        time.sleep(random.uniform(3, 8))
+        
+        # Use session for better connection management
+        response = self.session.get(url, timeout=30)
         response.raise_for_status()
         return response
     
