@@ -9,7 +9,7 @@ and user interface concerns.
 import streamlit as st
 import re
 from typing import Optional
-from app.scraper import HikeData
+from scraper import HikeData
 
 
 def clean_location_string(location: str) -> str:
