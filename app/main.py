@@ -34,8 +34,9 @@ def render_home_content():
     This app helps you explore and plan your hiking adventures. Use the navigation 
     on the left to access different features:
     
-    **🌲 Hike Scraper** - Extract detailed information from AllTrails hike pagec<br>
-    **🏔️ Build A Day Around My Hike** - Plan the perfect day around your trail with a generated daily intinerary
+    - **🌲 Hike Scraper** - Extract detailed information from AllTrails hike pages
+
+    - **🏔️ Build A Day Around My Hike** - Plan the perfect day around your trail with a generated daily itinerary
     
     Start by entering an AllTrails URL below to get hike information!
     """)
