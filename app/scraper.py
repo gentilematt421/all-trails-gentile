@@ -248,7 +248,7 @@ class AllTrailsScraper:
     
     def _extract_features(self, soup: BeautifulSoup) -> List[str]:
         """Extract features/tags from the page."""
-        features = []
+        features = set()  # Use a set to avoid duplicates
         features_selectors = [
             'div[class*="tags"]',
             '[data-testid="tags"]',
@@ -259,11 +259,15 @@ class AllTrailsScraper:
         for selector in features_selectors:
             features_container = soup.select_one(selector)
             if features_container:
-                feature_elements = features_container.find_all(['span', 'div', 'a'])
-                features = [feature.get_text(strip=True) for feature in feature_elements if feature.get_text(strip=True)]
+                # Find direct child elements that are likely to be feature tags
+                feature_elements = features_container.find_all(['span', 'div', 'a'], recursive=False)
+                for feature in feature_elements:
+                    feature_text = feature.get_text(strip=True)
+                    if feature_text and len(feature_text) > 1:  # Filter out empty or single-character text
+                        features.add(feature_text)
                 break
         
-        return features
+        return list(features)  # Convert set back to list
 
 
 class ScrapingError(Exception):
